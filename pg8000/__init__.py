@@ -42,7 +42,7 @@ __author__ = "Mathieu Fenniak"
 def connect(
         user=None, host='localhost', unix_sock=None, port=5432, database=None,
         password=None, ssl=False, timeout=None,
-        application_name=None, **kwargs):
+        application_name=None, socket_constructor=None, **kwargs):
     """Creates a connection to a PostgreSQL database.
 
     This function is part of the `DBAPI 2.0 specification
@@ -108,7 +108,7 @@ def connect(
     """
     return Connection(
         user, host, unix_sock, port, database, password, ssl,
-        timeout, application_name)
+        timeout, application_name, socket_constructor)
 
 
 apilevel = "2.0"

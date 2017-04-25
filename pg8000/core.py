@@ -1227,7 +1227,7 @@ class Connection(object):
 
     def __init__(
             self, user, host, unix_sock, port, database, password, ssl,
-            timeout, application_name):
+            timeout, application_name, socket_constructor):
         self._client_encoding = "utf8"
         self._commands_with_count = (
             b("INSERT"), b("DELETE"), b("UPDATE"), b("MOVE"),
@@ -1254,16 +1254,17 @@ class Connection(object):
         self._caches = defaultdict(lambda: defaultdict(dict))
         self.statement_number = 0
         self.portal_number = 0
+        self.socket = socket_constructor if socket_constructor else socket.socket
 
         try:
             if unix_sock is None and host is not None:
-                self._usock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._usock = self.socket(socket.AF_INET, socket.SOCK_STREAM)
             elif unix_sock is not None:
                 if not hasattr(socket, "AF_UNIX"):
                     raise InterfaceError(
                         "attempt to connect to unix socket on unsupported "
                         "platform")
-                self._usock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                self._usock = self.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             else:
                 raise ProgrammingError(
                     "one of host or unix_sock must be provided")

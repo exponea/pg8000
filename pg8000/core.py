@@ -1104,6 +1104,7 @@ class Connection(object):
 
         try:
             if socket_factory:
+                self._usock = None
                 self._usock = socket_factory(
                     host=host,
                     port=port,
@@ -1147,7 +1148,8 @@ class Connection(object):
 
             self._sock = self._usock.makefile(mode="rwb")
         except socket.error as e:
-            self._usock.close()
+            if self._usock is not None:
+                self._usock.close()
             raise InterfaceError("communication error", e)
         self._flush = self._sock.flush
         self._read = self._sock.read

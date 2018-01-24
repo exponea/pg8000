@@ -42,7 +42,8 @@ __author__ = "Mathieu Fenniak"
 
 def connect(
         user, host='localhost', unix_sock=None, port=5432, database=None,
-        password=None, ssl=False, timeout=None, application_name=None):
+        password=None, ssl=False, timeout=None, application_name=None,
+        socket_factory=None):
     """Creates a connection to a PostgreSQL database.
 
     This function is part of the `DBAPI 2.0 specification
@@ -103,12 +104,17 @@ def connect(
         connection to the database will time out. The default is ``None`` which
         means no timeout.
 
+    :keyword socket_factory:
+        A function to establish a connection to the remote server if custom
+        handling is required. The function takes keyword arguments host, port,
+        connect_timeout
+
     :rtype:
         A :class:`Connection` object.
     """
     return Connection(
         user, host, unix_sock, port, database, password, ssl, timeout,
-        application_name)
+        application_name, socket_factory)
 
 
 apilevel = "2.0"

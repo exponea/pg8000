@@ -1073,7 +1073,7 @@ class Connection(object):
 
     def __init__(
             self, user, host, unix_sock, port, database, password, ssl,
-            timeout, application_name):
+            timeout, application_name, socket_factory):
         self._client_encoding = "utf8"
         self._commands_with_count = (
             b("INSERT"), b("DELETE"), b("UPDATE"), b("MOVE"),
@@ -1103,24 +1103,31 @@ class Connection(object):
         self.statement_number = 0
 
         try:
-            if unix_sock is None and host is not None:
-                self._usock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            elif unix_sock is not None:
-                if not hasattr(socket, "AF_UNIX"):
-                    raise InterfaceError(
-                        "attempt to connect to unix socket on unsupported "
-                        "platform")
-                self._usock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            if socket_factory:
+                self._usock = socket_factory(
+                    host=host,
+                    port=port,
+                    connect_timeout=timeout
+                )
             else:
-                raise ProgrammingError(
-                    "one of host or unix_sock must be provided")
-            if not PY2 and timeout is not None:
-                self._usock.settimeout(timeout)
+                if unix_sock is None and host is not None:
+                    self._usock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                elif unix_sock is not None:
+                    if not hasattr(socket, "AF_UNIX"):
+                        raise InterfaceError(
+                            "attempt to connect to unix socket on unsupported "
+                            "platform")
+                    self._usock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                else:
+                    raise ProgrammingError(
+                        "one of host or unix_sock must be provided")
+                if not PY2 and timeout is not None:
+                    self._usock.settimeout(timeout)
 
-            if unix_sock is None and host is not None:
-                self._usock.connect((host, port))
-            elif unix_sock is not None:
-                self._usock.connect(unix_sock)
+                if unix_sock is None and host is not None:
+                    self._usock.connect((host, port))
+                elif unix_sock is not None:
+                    self._usock.connect(unix_sock)
 
             if ssl:
                 try:

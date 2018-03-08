@@ -1023,7 +1023,6 @@ def establish_ssl(socket, ssl_params):
         import ssl as sslmodule
 
         ca = ssl_params.get('ca')
-        ca = [ca] if ca else None
         verify_mode = sslmodule.CERT_REQUIRED if ca else sslmodule.CERT_NONE
         key = ssl_params.get('key')
         cert = ssl_params.get('cert')
